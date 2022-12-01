@@ -1,32 +1,25 @@
 {
-  "pins" : [
-    {
-      "identity" : "aoc-helpers",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/juliand665/AoC-Helpers.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "9b66c9256251d208e1eadf043f84fa624116426d"
+  "object": {
+    "pins": [
+      {
+        "package": "HandyOperators",
+        "repositoryURL": "https://github.com/juliand665/HandyOperators",
+        "state": {
+          "branch": null,
+          "revision": "39f39ae74471112d54152227bb70053b59ea796f",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "SimpleParser",
+        "repositoryURL": "https://github.com/juliand665/SimpleParser",
+        "state": {
+          "branch": "main",
+          "revision": "3f6e62c2c204541d32d02ce4b70f86784fb4aa31",
+          "version": null
+        }
       }
-    },
-    {
-      "identity" : "handyoperators",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/juliand665/HandyOperators",
-      "state" : {
-        "revision" : "39f39ae74471112d54152227bb70053b59ea796f",
-        "version" : "2.1.0"
-      }
-    },
-    {
-      "identity" : "simpleparser",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/juliand665/SimpleParser",
-      "state" : {
-        "branch" : "main",
-        "revision" : "3f6e62c2c204541d32d02ce4b70f86784fb4aa31"
-      }
-    }
-  ],
-  "version" : 2
+    ]
+  },
+  "version": 1
 }

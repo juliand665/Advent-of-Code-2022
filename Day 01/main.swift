@@ -1,4 +1,7 @@
 import Foundation
 import AoC_Helpers
 
-print("Hello, World!")
+let invs = input().lines().split(separator: "")
+let calories = invs.map { $0.asInts().sum() }
+print(calories.max()!)
+print(calories.sorted().suffix(3).sum())
