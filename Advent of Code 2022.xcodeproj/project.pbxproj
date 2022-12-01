@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B949319F2938644F00D44A48 /* AoC-Helpers in Frameworks */ = {isa = PBXBuildFile; productRef = B949319E2938644F00D44A48 /* AoC-Helpers */; };
 		B97F83F82938636C009D31FA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97F83F72938636C009D31FA /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -32,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B949319F2938644F00D44A48 /* AoC-Helpers in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +80,9 @@
 			dependencies = (
 			);
 			name = "Day 01";
+			packageProductDependencies = (
+				B949319E2938644F00D44A48 /* AoC-Helpers */,
+			);
 			productName = "Day 01";
 			productReference = B97F83F52938636C009D31FA /* Day 01 */;
 			productType = "com.apple.product-type.tool";
@@ -106,6 +111,9 @@
 				Base,
 			);
 			mainGroup = B97F83DE29386304009D31FA;
+			packageReferences = (
+				B949319D2938644F00D44A48 /* XCRemoteSwiftPackageReference "AoC-Helpers" */,
+			);
 			productRefGroup = B97F83E829386304009D31FA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -284,6 +292,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B949319D2938644F00D44A48 /* XCRemoteSwiftPackageReference "AoC-Helpers" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/juliand665/AoC-Helpers.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B949319E2938644F00D44A48 /* AoC-Helpers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B949319D2938644F00D44A48 /* XCRemoteSwiftPackageReference "AoC-Helpers" */;
+			productName = "AoC-Helpers";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B97F83DF29386304009D31FA /* Project object */;
 }
