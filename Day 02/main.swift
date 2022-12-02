@@ -14,12 +14,9 @@ struct Round: Parseable {
 		rhs = xyz.firstIndex(of: parser.consumeNext())!
 	}
 	
-	var winner: Int {
-		lhs == rhs ? 0 : (lhs + 1) % 3 == rhs ? 1 : -1
-	}
-	
 	var score1: Int {
-		3 * (winner + 1) + (rhs + 1)
+		let winner = lhs == rhs ? 0 : (lhs + 1) % 3 == rhs ? 1 : -1
+		return 3 * (winner + 1) + (rhs + 1)
 	}
 	
 	var score2: Int {
