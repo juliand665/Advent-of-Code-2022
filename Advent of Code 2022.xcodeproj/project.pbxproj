@@ -205,6 +205,8 @@
 			mainGroup = B97F83DE29386304009D31FA;
 			packageReferences = (
 				B949319D2938644F00D44A48 /* XCRemoteSwiftPackageReference "AoC-Helpers" */,
+				B9BC89EB2939C4A900B97626 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				B9BC89EC2939C4D600B97626 /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			productRefGroup = B97F83E829386304009D31FA /* Products */;
 			projectDirPath = "";
@@ -439,6 +441,22 @@
 		B949319D2938644F00D44A48 /* XCRemoteSwiftPackageReference "AoC-Helpers" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/juliand665/AoC-Helpers.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		B9BC89EB2939C4A900B97626 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		B9BC89EC2939C4D600B97626 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
 			requirement = {
 				branch = main;
 				kind = branch;
