@@ -2,16 +2,13 @@ import Foundation
 import AoC_Helpers
 import SimpleParser
 
-let abc = Array("ABC")
-let xyz = Array("XYZ")
-
 struct Round: Parseable {
 	var lhs, rhs: Int
 	
 	init(from parser: inout Parser) {
-		lhs = abc.firstIndex(of: parser.consumeNext())!
+		lhs = parser.consumeNext() - "A"
 		parser.consume(" ")
-		rhs = xyz.firstIndex(of: parser.consumeNext())!
+		rhs = parser.consumeNext() - "X"
 	}
 	
 	var score1: Int {
