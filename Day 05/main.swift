@@ -21,9 +21,7 @@ struct Move {
 
 let (rawGrid, rawMoves) = input().lines().split(whereSeparator: \.isEmpty).extract()
 
-let grid = Matrix(rawGrid.dropLast().map {
-	$0.dropFirst().chunks(ofCount: 4).map { $0.first! }
-})
+let grid = Matrix(rawGrid.dropLast().map { $0.dropFirst().striding(by: 4) })
 let initial = grid.transposed().rows.map {
 	$0.drop { $0 == " " }.reversed() as Array
 }
