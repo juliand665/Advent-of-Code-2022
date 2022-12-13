@@ -12,7 +12,7 @@ struct Pair {
 	}
 	
 	func isInOrder() -> Bool {
-		lhs.precedes(rhs)!
+		Value.areInOrder(lhs, rhs)!
 	}
 }
 
@@ -22,33 +22,27 @@ enum Value: Parseable, Equatable {
 	
 	init(from parser: inout Parser) {
 		if parser.tryConsume("[") {
-			var list: [Self] = []
-			if !parser.tryConsume("]") {
-				while true {
-					list.append(.init(from: &parser))
-					if parser.tryConsume("]") {
-						break
-					} else {
-						parser.consume(",")
-					}
-				}
+			if parser.tryConsume("]") {
+				self = .list([])
+			} else {
+				self = .list(.init(from: &parser))
+				parser.consume("]")
 			}
-			self = .list(list)
 		} else {
 			self = .number(parser.readInt())
 		}
 	}
 	
-	func precedes(_ other: Self) -> Bool? {
-		switch (self, other) {
+	static func areInOrder(_ lhs: Self, _ rhs: Self) -> Bool? {
+		switch (lhs, rhs) {
 		case (.number(let lhs), .number(let rhs)):
 			return lhs == rhs ? nil : lhs < rhs
-		case (.number(let num), .list(let list)):
-			return Self.list([.number(num)]).precedes(.list(list))
-		case (.list(let list), .number(let num)):
-			return Self.list(list).precedes(.list([.number(num)]))
+		case (.number, .list):
+			return areInOrder(.list([lhs]), rhs)
+		case (.list, .number):
+			return areInOrder(lhs, .list([rhs]))
 		case (.list(let lhs), .list(let rhs)):
-			return zip(lhs, rhs).firstNonNil { $0.precedes($1) }
+			return zip(lhs, rhs).firstNonNil(areInOrder)
 			?? (lhs.count == rhs.count ? nil : lhs.count < rhs.count)
 		}
 	}
@@ -65,7 +59,7 @@ let divider1 = Value.list([.list([.number(2)])])
 let divider2 = Value.list([.list([.number(6)])])
 let allPackets = pairs.flatMap { [$0.lhs, $0.rhs] } + [divider1, divider2]
 
-let sorted = allPackets.sorted { $0.precedes($1)! }
+let sorted = allPackets.sorted { Value.areInOrder($0, $1)! }
 let dividerIndices = sorted
 	.enumerated()
 	.filter { $1 == divider1 || $1 == divider2 }
