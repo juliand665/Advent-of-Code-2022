@@ -18,20 +18,13 @@ for line in input().lines() {
 	let count = parser.readInt()
 	
 	for _ in 0..<count {
-		positions = positions.dropFirst().reductions(positions[0] + direction.offset) { prev, pos in
-			guard (prev - pos).absolute.maxComponent > 1 else { return pos }
-			// need to move closer to prev
-			
-			switch prev.distance(to: pos) {
-			case 2, 4: // straight line (incl. diagonal)
-				return (pos + prev) / 2
-			case 3: // some other shape—move diagonally to be directly next to prev
-				return pos.neighborsWithDiagonals
-					.filter { $0.neighbors.contains(prev) }
-					.onlyElement()!
-			default:
-				fatalError()
-			}
+		positions = positions.reductions {
+			$0 + direction.offset
+		} step: { prev, pos in
+			let offset = (prev - pos)
+			let step = offset.map { $0.clamped(to: -1...1) }
+			guard step != offset else { return pos }
+			return pos + step
 		}
 		
 		visitedPart1.insert(positions[1])
@@ -41,3 +34,10 @@ for line in input().lines() {
 
 print(visitedPart1.count)
 print(visitedPart2.count)
+
+// this is often useful!
+extension Sequence {
+	func reductions<T>(first: (Element) throws -> T, step: (T, Element) throws -> T) rethrows -> [T] {
+		try chop().map { try $1.reductions(first($0), step) } ?? []
+	}
+}
