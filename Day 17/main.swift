@@ -55,6 +55,7 @@ struct Cave: CustomStringConvertible {
 	
 	func hasBlock(at position: Vector2) -> Bool? {
 		guard (0..<width).contains(position.x) else { return nil }
+		assert(position.y == -1 || position.y >= offset, "buffer too small: piece entered pruned area of cave")
 		guard position.y >= offset else { return nil }
 		guard position.y - offset < rows.count else { return false }
 		return rows[position.y - offset].contains(position.x)
@@ -80,7 +81,8 @@ struct Cave: CustomStringConvertible {
 	}
 	
 	mutating func cleanUp() {
-		let delta = floorOffset() - offset
+		let buffer = 2 // we need a bit of a buffer because removing rows this aggressively is technically unsound
+		let delta = max(0, floorOffset() - offset - buffer)
 		rows.removeFirst(delta)
 		offset += delta
 	}
@@ -89,7 +91,7 @@ struct Cave: CustomStringConvertible {
 		(0..<width)
 			.map { x in
 				(offset..<maxHeight).last {
-					hasBlock(at: Vector2(x, $0)) != false
+					hasBlock(at: Vector2(x, $0))!
 				} ?? 0
 			}
 			.min()!
@@ -113,52 +115,44 @@ struct Cave: CustomStringConvertible {
 	}
 }
 
-var seen: [Cave.Key: Cave] = [:]
-
-let target = 1_000_000_000_000
-var cave = Cave()
-while cave.rocksDropped < target {
-	var position = Vector2(2, cave.maxHeight + 3)
-	let rock = cave.nextRock()
-	if cave.rocksDropped % 100 == 0 {
-		print(cave.rocksDropped)
-	}
-	
-	while true {
-		let jetOffset = cave.nextJet()
-		if cave.canPlace(rock: rock, at: position + jetOffset) {
-			position += jetOffset
-		}
+func maxHeight(afterDropping target: Int) -> Int {
+	var cave = Cave()
+	var seen: [Cave.Key: Cave] = [:]
+	while cave.rocksDropped < target {
+		var position = Vector2(2, cave.maxHeight + 3)
+		let rock = cave.nextRock()
 		
-		guard cave.canPlace(rock: rock, at: position - .unitY) else {
-			cave.place(rock: rock, at: position)
-			
-			let key = cave.key()
-			if let old = seen[key], old.rows == cave.rows {
-				// this runs every time after succeeding once, but it's fine, it's a noop then
-				let period = cave.rocksDropped - old.rocksDropped
-				let repeats = (target - cave.rocksDropped) / period
-				if repeats > 0 {
-					print(cave)
-					print("rocks:", cave.rocksDropped, key)
-					print("period:", period)
-					print("repeats:", repeats)
-				}
-				cave.rocksDropped += repeats * period
-				cave.offset += repeats * (cave.offset - old.offset)
-				if repeats > 0 {
-					print(cave.maxHeight)
-				}
+		while true {
+			let jetOffset = cave.nextJet()
+			if cave.canPlace(rock: rock, at: position + jetOffset) {
+				position += jetOffset
 			}
-			seen[key] = cave
 			
-			break
+			guard cave.canPlace(rock: rock, at: position - .unitY) else {
+				cave.place(rock: rock, at: position)
+				
+				let key = cave.key()
+				if let old = seen[key], old.rows == cave.rows {
+					// this runs every time after succeeding once, but it's fine, it's a noop then
+					let period = cave.rocksDropped - old.rocksDropped
+					let repeats = (target - cave.rocksDropped) / period
+					guard repeats > 0 else { break } // would be a noop anyway, but this is faster
+					
+					cave.rocksDropped += repeats * period
+					cave.offset += repeats * (cave.offset - old.offset)
+				}
+				seen[key] = cave
+				
+				break
+			}
+			
+			position -= .unitY
 		}
-		
-		position -= .unitY
 	}
+	return cave.maxHeight
 }
 
-print(cave.maxHeight)
+print(maxHeight(afterDropping: 2022))
+print(maxHeight(afterDropping: 1_000_000_000_000))
 // example: 1514285714288
 // answer: 1585673352422
