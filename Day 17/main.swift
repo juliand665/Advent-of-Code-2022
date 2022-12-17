@@ -4,7 +4,7 @@ import SimpleParser
 import Algorithms
 import Collections
 
-let rockTypes = """
+let rockShapes: [[Vector2]] = """
 ####
 
 .#.
@@ -22,83 +22,143 @@ let rockTypes = """
 
 ##
 ##
-""".lineGroups().map { Matrix<Bool>($0.reversed().map { $0.map { $0 == "#" } }) }
-
-let jetPattern = input().map(Direction.init)
-
-let width = 7
-
-var cave = Matrix(width: 7, height: 5000, repeating: false)
-var maxHeight = 0
-var jetIndex = 0
-
-func intersects(rock: Int, at position: Vector2) -> Bool {
-	let rock = rockTypes[rock]
-	return rock.indexed().contains { $0.element && cave.element(at: $0.index + position) != false }
+""".lineGroups().map {
+	Matrix($0.reversed())
+		.indexed()
+		.filter { $0.element == "#" }
+		.map(\.index)
 }
 
-func heightUntilFloor() -> Int {
-	(0..<cave.width)
-		.map { x in
-			(0...).first {
-				cave.element(at: Vector2(x, maxHeight - 1 - $0)) != false
-			}!
+let jetPattern = input().map(Direction.init).map(\.offset)
+
+struct Cave: CustomStringConvertible {
+	typealias Row = BitMask<UInt8>
+	
+	let width = 7
+	var rows: Deque<Row> = []
+	var offset = 0
+	
+	var jetIndex = 0
+	var rocksDropped = 0
+	
+	var maxHeight: Int { rows.count + offset }
+	
+	mutating func nextJet() -> Vector2 {
+		defer { jetIndex += 1 }
+		return jetPattern[jetIndex % jetPattern.count]
+	}
+	
+	mutating func nextRock() -> Int {
+		defer { rocksDropped += 1 }
+		return rocksDropped % rockShapes.count
+	}
+	
+	func hasBlock(at position: Vector2) -> Bool? {
+		guard (0..<width).contains(position.x) else { return nil }
+		guard position.y >= offset else { return nil }
+		guard position.y - offset < rows.count else { return false }
+		return rows[position.y - offset].contains(position.x)
+	}
+	
+	mutating func placeBlock(at position: Vector2) {
+		let toInsert = position.y - offset - rows.count + 1
+		if toInsert > 0 {
+			rows.append(contentsOf: repeatElement([], count: toInsert))
 		}
-		.max()!
+		rows[position.y - offset].insertNew(position.x)
+	}
+	
+	func canPlace(rock: Int, at position: Vector2) -> Bool {
+		rockShapes[rock].allSatisfy { hasBlock(at: $0 + position) == false }
+	}
+	
+	mutating func place(rock: Int, at position: Vector2) {
+		for part in rockShapes[rock] {
+			placeBlock(at: part + position)
+		}
+		cleanUp()
+	}
+	
+	mutating func cleanUp() {
+		let delta = floorOffset() - offset
+		rows.removeFirst(delta)
+		offset += delta
+	}
+	
+	private func floorOffset() -> Int {
+		(0..<width)
+			.map { x in
+				(offset..<maxHeight).last {
+					hasBlock(at: Vector2(x, $0)) != false
+				} ?? 0
+			}
+			.min()!
+	}
+	
+	var description: String {
+		Matrix(rows.reversed().map { (0..<width).map($0.contains) })
+			.binaryImage()
+	}
+	
+	func key() -> Key {
+		.init(
+			jetIndex: jetIndex % jetPattern.count,
+			rockIndex: rocksDropped % rockShapes.count
+		)
+	}
+	
+	struct Key: Hashable {
+		var jetIndex: Int
+		var rockIndex: Int
+	}
 }
 
-func byteRep(of row: [Bool]) -> UInt8 {
-	row.reduce(0) { $0 << 1 | ($1 ? 1 : 0) }
-}
-
-struct CaveRep {
-	var cave: [UInt8]
-	var maxHeight: Int
-	var rocks: Int
-}
-
-func caveRep() -> [UInt8] {
-	cave.rows.prefix(heightUntilFloor()).map { byteRep(of: $0) }
-}
-
-var reps: [[CaveRep]] = .init(repeating: .init(repeating: .init(cave: [], maxHeight: 0, rocks: 0), count: jetPattern.count), count: rockTypes.count)
-
-var droppedRows = 0
+var seen: [Cave.Key: Cave] = [:]
 
 let target = 1_000_000_000_000
-var i = 0
-while i < target {
-	var position = Vector2(2, maxHeight + 3)
+var cave = Cave()
+while cave.rocksDropped < target {
+	var position = Vector2(2, cave.maxHeight + 3)
+	let rock = cave.nextRock()
+	if cave.rocksDropped % 100 == 0 {
+		print(cave.rocksDropped)
+	}
+	
 	while true {
-		let rock = i % rockTypes.count
-		let jet = jetIndex % jetPattern.count
-		jetIndex += 1
-		
-		let jetOffset = jetPattern[jet].offset
-		if !intersects(rock: rock, at: position + jetOffset) {
+		let jetOffset = cave.nextJet()
+		if cave.canPlace(rock: rock, at: position + jetOffset) {
 			position += jetOffset
 		}
 		
-		guard !intersects(rock: rock, at: position - .unitY) else {
-			rockTypes[rock].indexed().filter(\.element).forEach { cave[$0.index + position] = true }
-			maxHeight = max(maxHeight, position.y + rockTypes[rock].height)
+		guard cave.canPlace(rock: rock, at: position - .unitY) else {
+			cave.place(rock: rock, at: position)
 			
-			let rep = caveRep()
-			let old = reps[rock][jet]
-			if old.cave == rep {
-				print("looped!")
-				let repeats = (target - i) / (i - old.rocks)
-				i += repeats * (i - old.rocks)
-				droppedRows += repeats * (maxHeight - old.maxHeight)
+			let key = cave.key()
+			if let old = seen[key], old.rows == cave.rows {
+				// this runs every time after succeeding once, but it's fine, it's a noop then
+				let period = cave.rocksDropped - old.rocksDropped
+				let repeats = (target - cave.rocksDropped) / period
+				if repeats > 0 {
+					print(cave)
+					print("rocks:", cave.rocksDropped, key)
+					print("period:", period)
+					print("repeats:", repeats)
+				}
+				cave.rocksDropped += repeats * period
+				cave.offset += repeats * (cave.offset - old.offset)
+				if repeats > 0 {
+					print(cave.maxHeight)
+				}
 			}
-			reps[rock][jet] = .init(cave: rep, maxHeight: maxHeight, rocks: i)
+			seen[key] = cave
 			
 			break
 		}
 		
 		position -= .unitY
 	}
-	i += 1
 }
 
-print(maxHeight + droppedRows)
+print(cave.maxHeight)
+// example: 1514285714288
+// answer: 1585673352422
