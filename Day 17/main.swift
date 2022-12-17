@@ -82,6 +82,7 @@ struct Cave: CustomStringConvertible {
 	
 	mutating func cleanUp() {
 		let buffer = 2 // we need a bit of a buffer because removing rows this aggressively is technically unsound
+		// to be technically correct, we should be performing some sort of search to find the lowest position that's not blocked off, but that would take _effort_ lol
 		let delta = max(0, floorOffset() - offset - buffer)
 		rows.removeFirst(delta)
 		offset += delta
@@ -152,7 +153,12 @@ func maxHeight(afterDropping target: Int) -> Int {
 	return cave.maxHeight
 }
 
-print(maxHeight(afterDropping: 2022))
-print(maxHeight(afterDropping: 1_000_000_000_000))
-// example: 1514285714288
-// answer: 1585673352422
+measureTime {
+	print(maxHeight(afterDropping: 2022))
+}
+
+measureTime {
+	print(maxHeight(afterDropping: 1_000_000_000_000))
+	// example: 1514285714288
+	// answer: 1585673352422
+}
