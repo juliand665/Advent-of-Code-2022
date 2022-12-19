@@ -29,8 +29,9 @@ final class Blueprint: Parseable {
 		best = max(best, state.finalGeodes)
 		
 		guard state.timeLeft > 1 else { return }
-		for nextChoice in Choice.allCases.reversed() {
-			guard state.timeLeft > 2 || nextChoice == .geode else { return }
+		guard state.maxFinalGeodes > best else { return }
+		for nextChoice in Choice.allCases {
+			guard state.timeLeft > 2 || nextChoice == .geode else { continue }
 			guard let new = apply(nextChoice, to: state) else { continue }
 			explore(from: new)
 		}
@@ -107,6 +108,10 @@ struct State: Hashable {
 	
 	var finalGeodes: Int {
 		geodes + geodeProd * timeLeft
+	}
+	
+	var maxFinalGeodes: Int {
+		finalGeodes + timeLeft * (timeLeft - 1) / 2
 	}
 }
 
