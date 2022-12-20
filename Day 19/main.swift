@@ -22,10 +22,8 @@ final class Blueprint: Parseable {
 	}
 	
 	var best = 0
-	var explored: Set<State> = []
 	
 	func explore(from state: State) {
-		guard explored.insert(state).inserted else { return }
 		best = max(best, state.finalGeodes)
 		
 		guard state.timeLeft > 1 else { return }
@@ -116,11 +114,9 @@ struct State: Hashable {
 }
 
 measureTime {
-	print(input().lines().map(Blueprint.init).map { bp -> Int in
-		bp.explore(from: .init(timeLeft: 24))
-		print(bp.best, bp.explored.count)
-		bp.explored = []
-		return bp.best * bp.number
+	print(input().lines().map(Blueprint.init).map { blueprint -> Int in
+		blueprint.explore(from: .init(timeLeft: 24))
+		return blueprint.best * blueprint.number
 	}.sum())
 }
 
@@ -131,7 +127,6 @@ let blueprints = input().lines().map(Blueprint.init).prefix(3)
 for blueprint in blueprints {
 	measureTime {
 		blueprint.explore(from: .init(timeLeft: 32))
-		print(blueprint.best, blueprint.explored.count)
 	}
 }
 
